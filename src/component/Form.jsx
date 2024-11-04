@@ -18,11 +18,11 @@ const registerSchema = yup.object().shape({
 
 const residencySchema = yup.object().shape({
   phone: yup
-  .string().required('required'),
+    .string().required('Phone number is required'),
   address: yup
   .string().required('required'),
-  country: yup
-  .string().required('required'),
+ // country: yup
+  //.string().required('required'),
 });
 
 const initialValuesRegister = {
@@ -35,7 +35,7 @@ const initialValuesRegister = {
 const initialValuesResidency = {
   phone: "",
   address: "",
-  country: "",
+  //country: "",
 };
 
 const Form = () => {
@@ -46,7 +46,7 @@ const Form = () => {
   const isRegister = pageType === "register";
   const isProfile = pageType === "complete";
   const isComplete = pageType === "completeprofile";
-  
+ // const [phone, setPhone] = useState("");
 
   const register = async (values, onSubmitProps) => {
     const formData = new FormData();
@@ -64,12 +64,31 @@ const Form = () => {
       setPageType("home");
     }
   };
+  const complete = async (values, onSubmitProps) => {
+  const formData = new FormData();
+  for (let value in values) {
+    formData.append(value, values[value]);
+  }
+  
+  // Afficher toutes les paires clé-valeur de formData dans la console
+  for (let pair of formData.entries()) {
+    console.log(pair[0] + ': ' + pair[1]); // Cela devrait afficher les valeurs
+  }
+  
+  onSubmitProps.resetForm();
+
+  if (formData) {
+    setPageType("completeprofile");
+  }
+};
+
 
   
 
   const handleFormSubmit = async (values, onSubmitProps) => {
     
     if (isRegister) await register(values, onSubmitProps);
+    if (isResidency) await complete(values, onSubmitProps);
   };
 
   const colors = [
@@ -99,25 +118,36 @@ const Form = () => {
       
       : (<Formik
         onSubmit={handleFormSubmit}
-        initialValues={isResidency ? initialValuesResidency : initialValuesRegister}
-        validationSchema={isResidency ? residencySchema: registerSchema}
+        initialValues={isProfile ? initialValuesResidency : initialValuesRegister}
+        validationSchema={isProfile ? residencySchema: registerSchema}
         
       >
 
         
         {({
           values,
-          errors,
-          touched,
+          
           handleBlur,
           handleChange,
           handleSubmit,
+          setFieldValue, 
           resetForm,
         }) => (
           <form onSubmit={handleSubmit} className=" bg-white ">
-            
+             <Link
+              onClick={() => {
+                setPageType(isRegister ? "complete" : "home");
+                resetForm();
+              }}
+              className="text-blue-500 underline cursor-pointer hover:text-blue-400"
+              as="span"
+            >
+              {isRegister ? "Back" : ""}
+            </Link>
             {
               isRegister ? (
+
+                
                 <div className="flex flex-col items-end">
                     <h4 className="text-lg font-semibold">STEP 01/03</h4>
                     <span className="text-gray-600">Personal Info</span>
@@ -161,12 +191,7 @@ const Form = () => {
                     onChange={handleChange}
                     value={values.firstName}
                     name="firstName"
-                    status={
-                      touched.firstName && errors.firstName
-                        ? "error"
-                        : "default"
-                    }
-                    helperText={touched.firstName && errors.firstName}
+                   
                     placeholder="invictus Innocent"
                     variant="bordered"
                     labelPlacement="outside"
@@ -179,8 +204,7 @@ const Form = () => {
                     onChange={handleChange}
                     value={values.email}
                     name="email"
-                    error={Boolean(touched.email) && Boolean(errors.email)}
-                    helperText={touched.email && errors.email}
+                    
                     placeholder="Enter email adress"
                     variant="bordered"
                     labelPlacement="outside"
@@ -193,10 +217,7 @@ const Form = () => {
                     onChange={handleChange}
                     value={values.password}
                     name="password"
-                    error={
-                      Boolean(touched.password) && Boolean(errors.password)
-                    }
-                    helperText={touched.password && errors.password}
+                  
                     placeholder="Enter your password"
                     variant="bordered"
                     labelPlacement="outside"
@@ -210,10 +231,7 @@ const Form = () => {
                     onChange={handleChange}
                     value={values.polityc}
                     name="polytic"
-                    status={
-                      touched.polityc && errors.polityc ? "error" : "default"
-                    }
-                    helperText={touched.polityc && errors.polityc}
+                    
                   >
                     I agree to terms & conditions
                   </Checkbox>
@@ -248,84 +266,88 @@ const Form = () => {
               {isRegister ? "Back" : "Back"}
             </Link>
             <div className="flex flex-col gap-3 ">
-      {isResidency ? (<div>
+      {isResidency ? (
+        <div>
         
-        <div className="flex flex-col mb-4">
-      <label className="text-gray-700 mb-1">Phone Number</label>
-      <PhoneInput
-        country={'us'}
-        onBlur={handleBlur}
-        onChange={handleChange}
-        value={values.phone}
-        inputClass={`
-          border 
-          ${phone ? 'border-gray-300' : 'border-red-500'} 
-          p-2 
-          rounded-lg 
-          transition 
-          duration-200 
-          ease-in-out 
-          focus:outline-none 
-          focus:ring-2 
-          focus:ring-blue-500 
-          w-full 
-        `}
-        buttonClass="bg-gray-200"
-        dropdownClass="bg-white"
-        specialLabel=""
-      />
-    </div>
-    <Input
-                    label="Your address*"
+        
+       {/*<div className="flex flex-col mb-4">
+  <label htmlFor="phone" className="text-gray-700 mb-1">Phone Number</label>
+  <PhoneInput
+    country={'us'}
+    onBlur={handleBlur} // Fonctionne avec l'attribut `name`
+    onChange={(value) => setFieldValue('phone', value)} // Utilisez `setFieldValue` pour mettre à jour la valeur
+    value={values.phone}
+    name="phone"
+    id="phone" // Ajoutez un `id` pour lier l'étiquette correctement
+    placeholder="Enter your phone number"
+    inputClass={`
+      border 
+      p-2 
+      rounded-lg 
+      transition 
+      duration-200 
+      ease-in-out 
+      focus:outline-none 
+      focus:ring-2 
+      focus:ring-blue-500 
+      w-full 
+    `}
+  />
+  
+</div>*/ } 
+<br/>
+ <Input
+                    label="Phone*"
                     onBlur={handleBlur}
-                    onChange={handleChange}
-                    value={values.address}
-                    name="address"
-                    status={
-                      touched.address && errors.address
-                        ? "error"
-                        : "default"
-                    }
-                    helperText={touched.address && errors.address}
-                    placeholder="Please enter address"
+                    onChange={handleChange} // Utilisez setFieldValue pour les changements
+  value={values.phone || ""} // Utilisez une chaîne vide si undefined
+                    name="phone"
+                   
+                    placeholder="phone number"
                     variant="bordered"
                     labelPlacement="outside"
                     size="lg"
                   />
+                  <br />
+    <Input
+  label="Your address*"
+  onBlur={handleBlur}
+  onChange={handleChange} // Utilisez setFieldValue pour les changements
+  value={values.address || ""} // Utilisez une chaîne vide si undefined
+  name="address"
+  
+  placeholder="Please enter address"
+  variant="bordered"
+  labelPlacement="outside"
+  size="lg"
+/>
+ <br />
+ <Select
+  items={countries}
+  label="Country of residence*"
+  onBlur={handleBlur}
+  onChange={handleChange}
+  value={values.country}
+  name="country"
+  
+  placeholder="Please select"
+  variant="bordered"
+  labelPlacement="outside"
+  size="lg"
+>
+  {countries.map((countrie) => (
+    <SelectItem key={countrie.code} textValue={countrie.name}>
+      <div className="flex gap-2 items-center">
+        <div className="flex flex-col">
+          <span className="text-small">{countrie.name}</span>
+        </div>
+      </div>
+    </SelectItem>
+  ))}
+</Select>
+ 
 
-
-
-<Select
-      items={countries}
-      label="Country of residence*"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    value={values.country}
-                    name="address"
-                    status={
-                      touched.country && errors.country
-                        ? "error"
-                        : "default"
-                    }
-                    helperText={touched.country && errors.country}
-                    placeholder="Please select"
-                    variant="bordered"
-                    labelPlacement="outside"
-                    size="lg"
-    >
-      {(countrie) => (
-        <SelectItem key={countrie.code} textValue={countrie.name}>
-          <div className="flex gap-2 items-center">
-            
-            <div className="flex flex-col">
-              <span className="text-small">{countrie.name}</span>
-              
-            </div>
-          </div>
-        </SelectItem>
-      )}
-    </Select>
-
+ <br />
     <Button
                     type="submit"
                     color="primary"
@@ -342,6 +364,7 @@ const Form = () => {
              
               
             </div>
+            
           </form>
         )}
       </Formik>)}
